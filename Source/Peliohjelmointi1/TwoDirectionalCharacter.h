@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		float speedChangeRate;
 
+protected:
+	virtual void Tick(float delta) override;
+
 private:
 
 	bool targetDirection;

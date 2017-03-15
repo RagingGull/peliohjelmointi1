@@ -6,6 +6,8 @@
 
 APeliohjelmointi1Character::APeliohjelmointi1Character()
 {
+
+	PrimaryActorTick.bCanEverTick = true;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 80.0f);
 	
@@ -42,6 +44,12 @@ APeliohjelmointi1Character::APeliohjelmointi1Character()
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
 	sprinting = false;
+}
+
+void APeliohjelmointi1Character::Tick(float delta) {
+	auto loc = GetActorLocation();
+	loc.X = 0;
+	SetActorLocation(loc);
 }
 
 //////////////////////////////////////////////////////////////////////////

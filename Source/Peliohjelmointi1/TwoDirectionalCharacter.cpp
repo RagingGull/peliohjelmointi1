@@ -19,6 +19,12 @@ ATwoDirectionalCharacter::ATwoDirectionalCharacter()
 
 }
 
+void ATwoDirectionalCharacter::Tick(float delta) {
+	auto loc = GetActorLocation();
+	loc.X = 0;
+	SetActorLocation(loc);
+}
+
 void ATwoDirectionalCharacter::Move(float speed) {
 	if (!bSprinting)
 		speed *= 0.5f;
@@ -38,7 +44,7 @@ void ATwoDirectionalCharacter::Move(float speed) {
 	currentForwardY = GetActorForwardVector().Y;
 	currentDirection = currentForwardY < 0.f;
 
-	UE_LOG(LogTemp, Warning, TEXT("Change %f, current %f, target %s, dir %s"), change, currentSpeed, targetDirection, currentDirection);
+	//UE_LOG(LogTemp, Warning, TEXT("Change %f, current %f, target %s, dir %s"), change, currentSpeed, targetDirection ? TEXT("right") : TEXT("left"), currentDirection ? TEXT("right") : TEXT("left"));
 }
 
 float ATwoDirectionalCharacter::GetDirection(FVector target){

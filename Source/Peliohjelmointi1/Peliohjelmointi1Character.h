@@ -17,7 +17,7 @@ class APeliohjelmointi1Character : public ACharacter
 	class USpringArmComponent* CameraBoom;
 
 protected:
-
+	virtual void Tick(float delta) override;
 	/** Called for side to side input */
 	void MoveRight(float Val);
 
