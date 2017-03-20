@@ -17,11 +17,12 @@ ATwoDirectionalCharacter::ATwoDirectionalCharacter()
 
 	bSprinting = false;
 
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void ATwoDirectionalCharacter::Tick(float delta) {
 	auto loc = GetActorLocation();
-	loc.X = 0;
+	loc.X = 0.f;
 	SetActorLocation(loc);
 }
 
@@ -32,19 +33,17 @@ void ATwoDirectionalCharacter::Move(float speed) {
 	float spd = speed - currentSpeed;
 	float rate = GetWorld()->GetDeltaSeconds() * speedChangeRate;
 	float change = FMath::Min(FMath::Abs(spd), rate);
-
-	if (speed < 0)
+	if (spd < 0.f)
 		change *= -1.f;
 	currentSpeed += change;
 	currentSpeed = FMath::Clamp(currentSpeed, -1.f, 1.f);
 
+	//UE_LOG(LogTemp, Warning, TEXT("Input %f, diff %f, change %f, current %f"), speed, spd, change, currentSpeed);
 	if (currentSpeed != 0.f)
 		targetDirection = currentSpeed > 0.f;
 
 	currentForwardY = GetActorForwardVector().Y;
 	currentDirection = currentForwardY < 0.f;
-
-	//UE_LOG(LogTemp, Warning, TEXT("Change %f, current %f, target %s, dir %s"), change, currentSpeed, targetDirection ? TEXT("right") : TEXT("left"), currentDirection ? TEXT("right") : TEXT("left"));
 }
 
 float ATwoDirectionalCharacter::GetDirection(FVector target){
@@ -52,5 +51,17 @@ float ATwoDirectionalCharacter::GetDirection(FVector target){
 	float ret = target.Y > y ? -1.f : 1.f;
 	return ret;
 
+}
+
+float ATwoDirectionalCharacter::TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) {
+	currentHitPoints -= dmgAmount;
+	if (currentHitPoints <= 0)
+		Kill();
+	UE_LOG(LogTemp, Warning, TEXT("Hit for %f points of damage"), dmgAmount);
+	return currentHitPoints;
+}
+
+void ATwoDirectionalCharacter::Kill_Implementation() {
+	Cast<UTwoDirectionalCharacterAnimator>(GetMesh()->GetAnimInstance())->Kill();
 }
 

@@ -11,7 +11,14 @@ class PELIOHJELMOINTI1_API ATwoDirectionalCharacter : public ACharacter {
 	GENERATED_BODY()
 
 public:
-	ATwoDirectionalCharacter();
+	ATwoDirectionalCharacter();	
+
+	virtual float TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) override;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Combat")
+		void Kill();
+
+	virtual void Kill_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		void Move(float speed);
@@ -32,6 +39,15 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Movement")
 		FORCEINLINE float getCurrentForwardY() { return currentForwardY; }
 
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		FORCEINLINE float getDamage() { return damage[currentAttackType]; }
+
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		FORCEINLINE float getCurrentHitpoints() { return currentHitPoints; }
+
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		FORCEINLINE int getCurrentAttackType() { return currentAttackType; }
+
 	//bp properties
 	UPROPERTY(BlueprintReadWrite, Category = "Movement")
 		bool bSprinting;
@@ -50,5 +66,15 @@ private:
 
 	float currentSpeed;
 	float currentForwardY;
+
+	int currentAttackType;
+
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+		TArray<float> damage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+		float maxHitPoints;
+
+	float currentHitPoints;
 
 };

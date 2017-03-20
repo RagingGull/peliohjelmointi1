@@ -4,6 +4,7 @@
 
 #include "TwoDirectionalCharacter.h"
 #include "Animation/AnimInstance.h"
+#include "GenericPlatformMath.h"
 #include "TwoDirectionalCharacterAnimator.generated.h"
 
 
@@ -25,6 +26,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Notify")
 		void OnTurnEnd();
 
+	FORCEINLINE bool GetTargetDirection() { return targetDirection; }
+	FORCEINLINE bool GetCurrentDirection() { return currentDirection; }
+	FORCEINLINE float GetCurrentSpeed() { return currentSpeed; }
+	FORCEINLINE float GetCurrentForwardY() { return currentForwardY; }
+
+	FORCEINLINE bool isDead() { return killTrigger; }
+
+	void Kill();
+
 private:
 	UPROPERTY(BlueprintReadOnly, Category="Character", meta = (AllowPrivateAccess = "true"))
 	class ATwoDirectionalCharacter * character;
@@ -37,4 +47,7 @@ private:
 	float currentSpeed;
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float currentForwardY;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	bool killTrigger;
 };

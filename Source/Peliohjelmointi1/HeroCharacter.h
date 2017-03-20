@@ -4,6 +4,7 @@
 
 #include "TwoDirectionalCharacter.h"
 #include "HeroAnimator.h"
+#include "Runtime/Engine/Classes/Engine/StaticMeshActor.h"
 #include "HeroCharacter.generated.h"
 
 /**
@@ -11,6 +12,7 @@
  */
 UCLASS()
 class PELIOHJELMOINTI1_API AHeroCharacter : public ATwoDirectionalCharacter {
+
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -19,33 +21,62 @@ class PELIOHJELMOINTI1_API AHeroCharacter : public ATwoDirectionalCharacter {
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraBoom;
 
-	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-		AActor * axe;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character", meta = (AllowPrivateAccess = "true"))
+		class UStaticMeshComponent * axe;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character", meta = (AllowPrivateAccess = "true"))
+		class UStaticMeshComponent * cigar;
 
 	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 		float climbDistance;
 
 	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+		float blockSpeed;
+
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 		FVector axeThrowForce;
+
+	class UHeroAnimator * _anim;
 
 public:
 	AHeroCharacter();
-
-	/** Returns SideViewCameraComponent subobject **/
+	
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
-	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
+	FORCEINLINE class UStaticMeshComponent * GetAxe() const { return axe; }
+	FORCEINLINE FVector GetAxeThrowForce() const { return axeThrowForce; }
+
+	FORCEINLINE class UStaticMeshComponent * GetCigarMesh() const { return cigar; }
+
+	FORCEINLINE float GetClimbDistance() const { return climbDistance; }
+	FORCEINLINE float GetBlockSpeed() const { return blockSpeed; }
+
+	class UHeroAnimator * GetAnim() const { return Cast<UHeroAnimator>(GetMesh()->GetAnimInstance()); }
+
+	virtual void Kill_Implementation();
+
+	void GrabAxe();
+	void ReleaseAxe();
+	void ToggleAxePhysics();
+	void ShoveAxe();
+
 protected:
+	virtual void Tick(float delta) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent & e) override;
+
 	void Sprint(float value);
+	void Block(float value);
 
-	UPROPERTY(BlueprintReadOnly, Category = "Animation")
-		class UHeroAnimator * anim;
+	void QuickAttack(FKey key);
+	void SlowAttack(FKey key);
+	void CigarAttackStart(FKey key);
+	void CigarAttackEnd(FKey key);
 
-	UPROPERTY(BlueprintReadOnly, Category = "Character")
-		class USkeletalMeshComponent * axeMesh;
+	bool ShouldClimb();
 
 private:
+	FVector GetAxeOffset() { return FVector(0.f, 0.f, 58.f); };
 
 };

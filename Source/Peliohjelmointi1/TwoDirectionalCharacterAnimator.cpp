@@ -2,13 +2,11 @@
 
 #include "Peliohjelmointi1.h"
 #include "TwoDirectionalCharacterAnimator.h"
-#include "GenericPlatformMath.h"
-
-
 
 
 
 void UTwoDirectionalCharacterAnimator::NativeUpdateAnimation(float delta) {
+	Super::NativeUpdateAnimation(delta);
 	if (character) {
 		//Duplicated fields with thread-safety in mind..
 		currentSpeed = character->getCurrentSpeed();
@@ -19,6 +17,7 @@ void UTwoDirectionalCharacterAnimator::NativeUpdateAnimation(float delta) {
 }
 
 void UTwoDirectionalCharacterAnimator::NativeInitializeAnimation() {
+	Super::NativeInitializeAnimation();
 	auto pawnOwner = TryGetPawnOwner();
 	if (pawnOwner)
 		character = Cast<ATwoDirectionalCharacter>(pawnOwner);
@@ -33,4 +32,8 @@ void UTwoDirectionalCharacterAnimator::OnTurnEnd() {
 		loc.X = 0;
 		character->SetActorLocationAndRotation(loc, rot);
 	}
+}
+
+void UTwoDirectionalCharacterAnimator::Kill() {
+	killTrigger = true;
 }
