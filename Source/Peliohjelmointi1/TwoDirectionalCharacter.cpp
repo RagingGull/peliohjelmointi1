@@ -21,6 +21,7 @@ ATwoDirectionalCharacter::ATwoDirectionalCharacter()
 }
 
 void ATwoDirectionalCharacter::Tick(float delta) {
+	Super::Tick(delta);
 	auto loc = GetActorLocation();
 	loc.X = 0.f;
 	SetActorLocation(loc);
