@@ -2,8 +2,7 @@
 #include "TwoDirectionalCharacter.h"
 
 
-ATwoDirectionalCharacter::ATwoDirectionalCharacter()
-{
+ATwoDirectionalCharacter::ATwoDirectionalCharacter() : Super() {
 	GetCharacterMovement()->bOrientRotationToMovement = false; //Root motion controls this
 	GetCharacterMovement()->GravityScale = 2.f;
 	GetCharacterMovement()->AirControl = 0.0f;
@@ -37,14 +36,12 @@ void ATwoDirectionalCharacter::PostEditChangeProperty(FPropertyChangedEvent & e)
 
 void ATwoDirectionalCharacter::OnConstruction(const FTransform & Transform) {
 	currentHitPoints = maxHitPoints;
-	UE_LOG(LogTemp, Warning, TEXT("Hitpoints set at %f"), maxHitPoints);
-
 }
 
 void ATwoDirectionalCharacter::Move(float speed) {
 	if (!bSprinting)
 		speed *= 0.5f;
-	
+
 	float spd = speed - currentSpeed;
 	float rate = GetWorld()->GetDeltaSeconds() * speedChangeRate;
 	float change = FMath::Min(FMath::Abs(spd), rate);
@@ -60,10 +57,18 @@ void ATwoDirectionalCharacter::Move(float speed) {
 	currentDirection = currentForwardY < 0.f;
 }
 
-float ATwoDirectionalCharacter::GetDirection(FVector target){
+float ATwoDirectionalCharacter::GetDirection(FVector target) {
 	float y = GetActorLocation().Y;
 	float ret = target.Y > y ? -1.f : 1.f;
 	return ret;
+}
+
+void ATwoDirectionalCharacter::Stagger() {
+	Cast<UTwoDirectionalCharacterAnimator>(GetMesh()->GetAnimInstance())->Stagger();
+}
+
+void ATwoDirectionalCharacter::BlockAttack() {
+	Cast<UTwoDirectionalCharacterAnimator>(GetMesh()->GetAnimInstance())->BlockAttack();
 }
 
 float ATwoDirectionalCharacter::TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) {

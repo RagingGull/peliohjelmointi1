@@ -6,7 +6,7 @@
 #include "HorizontalDamage.h"
 #include "VerticalDamage.h"
 
-AHeroCharacter::AHeroCharacter() {
+AHeroCharacter::AHeroCharacter() : Super() {
 
 	cigar = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cigar"));
 	cigar->SetupAttachment(GetMesh(), TEXT("CigarSocket"));

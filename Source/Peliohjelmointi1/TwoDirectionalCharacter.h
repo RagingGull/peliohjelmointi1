@@ -16,11 +16,6 @@ public:
 
 	virtual float TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) override;
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Combat")
-		void SmokeStun();
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Combat")
-		void SmokeUnstun();
-
 	UFUNCTION(BlueprintNativeEvent, Category = "Combat")
 		void Kill(TSubclassOf<UDamageType> dmgType);
 
@@ -31,6 +26,12 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Movement")
 		float GetDirection(FVector target);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void Stagger();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void BlockAttack();
 
 	//Getters
 	UFUNCTION(BlueprintPure, Category = "Movement")
@@ -47,9 +48,6 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = "Combat")
 		FORCEINLINE float getCurrentHitpoints() { return currentHitPoints; }
-
-	UFUNCTION(BlueprintPure, Category = "Combat")
-		int getDamage() { return damage; }
 
 	//bp properties
 	UPROPERTY(BlueprintReadWrite, Category = "Movement")
@@ -71,9 +69,6 @@ private:
 
 	float currentSpeed;
 	float currentForwardY;
-
-	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-		int damage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 		float maxHitPoints;

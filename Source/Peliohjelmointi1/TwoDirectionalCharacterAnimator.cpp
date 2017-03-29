@@ -33,3 +33,9 @@ void UTwoDirectionalCharacterAnimator::OnTurnEnd() {
 		character->SetActorLocationAndRotation(loc, rot);
 	}
 }
+
+void UTwoDirectionalCharacterAnimator::Stagger() { isStaggering = true; }
+
+void UTwoDirectionalCharacterAnimator::OnStaggerEnd() { isStaggering = false; }
+
+void UTwoDirectionalCharacterAnimator::BlockAttack() { attackBlockedTrigger = true; }
