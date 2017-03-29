@@ -185,10 +185,6 @@ bool AHeroCharacter::ShouldClimb() {
 	return false;
 }
 
-bool AHeroCharacter::IsBlocking() const {
-	 return GetAnim()->IsBlocking();
-}
-
 void AHeroCharacter::Kill_Implementation(TSubclassOf<UDamageType> dmgType) {
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
