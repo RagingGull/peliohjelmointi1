@@ -19,20 +19,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void PasteBoneTransforms(ATwoDirectionalCharacter * source);
-
-DECLARE_EVENT(UDead2DCharacterAnimator, FPastedDelegate);
-		FPastedDelegate& OnPasted() { return PastedEvent; }
-
+	
 	UPROPERTY(BlueprintReadWrite)
 		bool canCopyPose;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 		void DoPasteBoneTransforms(ATwoDirectionalCharacter * source);
-
-	UFUNCTION(BlueprintCallable)
-		void BroadcastOnPasted();
-
-private:
-	FPastedDelegate PastedEvent;
+	
 };

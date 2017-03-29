@@ -7,8 +7,5 @@ void UDead2DCharacterAnimator::PasteBoneTransforms(ATwoDirectionalCharacter * so
 	DoPasteBoneTransforms(source);
 }
 
-void UDead2DCharacterAnimator::BroadcastOnPasted() {
-	PastedEvent.Broadcast();
-}
 
 

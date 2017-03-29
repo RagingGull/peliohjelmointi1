@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameFramework/Character.h"
+#include "GameFramework/DamageType.h"
 #include "TwoDirectionalCharacterAnimator.h"
 
 #include "TwoDirectionalCharacter.generated.h"
@@ -15,10 +16,15 @@ public:
 
 	virtual float TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) override;
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Combat")
-		void Kill();
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Combat")
+		void SmokeStun();
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Combat")
+		void SmokeUnstun();
 
-	virtual void Kill_Implementation();
+	UFUNCTION(BlueprintNativeEvent, Category = "Combat")
+		void Kill(TSubclassOf<UDamageType> dmgType);
+
+	virtual void Kill_Implementation(TSubclassOf<UDamageType> dmgType);
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		void Move(float speed);
@@ -38,15 +44,12 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Movement")
 		FORCEINLINE float getCurrentForwardY() { return currentForwardY; }
-
-	UFUNCTION(BlueprintPure, Category = "Combat")
-		FORCEINLINE float getDamage() { return damage[currentAttackType]; }
-
+	
 	UFUNCTION(BlueprintPure, Category = "Combat")
 		FORCEINLINE float getCurrentHitpoints() { return currentHitPoints; }
 
 	UFUNCTION(BlueprintPure, Category = "Combat")
-		FORCEINLINE int getCurrentAttackType() { return currentAttackType; }
+		int getDamage() { return damage; }
 
 	//bp properties
 	UPROPERTY(BlueprintReadWrite, Category = "Movement")
@@ -58,23 +61,24 @@ public:
 
 protected:
 	virtual void Tick(float delta) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent & e) override;
+	virtual void OnConstruction(const FTransform & Transform) override;
 
 private:
-
+	
 	bool targetDirection;
 	bool currentDirection;
 
 	float currentSpeed;
 	float currentForwardY;
 
-	int currentAttackType;
-
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-		TArray<float> damage;
+		int damage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 		float maxHitPoints;
 
-	float currentHitPoints;
+	UPROPERTY(VisibleAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+		float currentHitPoints;
 
 };

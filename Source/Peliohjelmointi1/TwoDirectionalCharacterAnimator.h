@@ -5,6 +5,7 @@
 #include "TwoDirectionalCharacter.h"
 #include "Animation/AnimInstance.h"
 #include "GenericPlatformMath.h"
+#include "GameFramework/DamageType.h"
 #include "TwoDirectionalCharacterAnimator.generated.h"
 
 
@@ -21,7 +22,7 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaTimeX) override;
 
 public:
-	FORCEINLINE class ATwoDirectionalCharacter * getCharacter() { return character; }	
+	FORCEINLINE class ATwoDirectionalCharacter * getCharacter() { return character; }
 
 	UFUNCTION(BlueprintCallable, Category = "Notify")
 		void OnTurnEnd();
@@ -31,23 +32,26 @@ public:
 	FORCEINLINE float GetCurrentSpeed() { return currentSpeed; }
 	FORCEINLINE float GetCurrentForwardY() { return currentForwardY; }
 
-	FORCEINLINE bool isDead() { return killTrigger; }
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		FORCEINLINE bool IsDead() { return dead; };
 
-	void Kill();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
+		void Kill(TSubclassOf<UDamageType> dmgType);
 
 private:
-	UPROPERTY(BlueprintReadOnly, Category="Character", meta = (AllowPrivateAccess = "true"))
-	class ATwoDirectionalCharacter * character;
+	UPROPERTY(BlueprintReadOnly, Category = "Character", meta = (AllowPrivateAccess = "true"))
+		class ATwoDirectionalCharacter * character;
 
-	UPROPERTY(BlueprintReadOnly, Category="Movement", meta = (AllowPrivateAccess = "true"))
-	bool targetDirection;
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool currentDirection;
+		bool targetDirection;
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float currentSpeed;
+		bool currentDirection;
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float currentForwardY;
+		float currentSpeed;
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+		float currentForwardY;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	bool killTrigger;
+	UPROPERTY(BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+		bool dead;
+
 };

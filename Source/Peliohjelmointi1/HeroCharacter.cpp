@@ -2,6 +2,9 @@
 
 #include "Peliohjelmointi1.h"
 #include "HeroCharacter.h"
+#include "SmokeDamage.h"
+#include "HorizontalDamage.h"
+#include "VerticalDamage.h"
 
 AHeroCharacter::AHeroCharacter() {
 
@@ -38,6 +41,10 @@ AHeroCharacter::AHeroCharacter() {
 		GrabAxe();
 
 	PrimaryActorTick.bCanEverTick = true;
+
+	horizontalAttack = FHeroAttackType(250, TSubclassOf<UDamageType>(UHorizontalDamage::StaticClass()));
+	verticalAttack = FHeroAttackType(100, TSubclassOf<UDamageType>(UVerticalDamage::StaticClass()));
+	smokeAttack = FHeroAttackType(0, TSubclassOf<UDamageType>(USmokeDamage::StaticClass()));
 }
 
 void AHeroCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
@@ -77,29 +84,36 @@ void AHeroCharacter::Block(float value) {
 void AHeroCharacter::QuickAttack(FKey key) {
 	auto anim = GetAnim();
 	if (anim) {
-		if (anim->IsBlocking())
+		if (anim->IsBlocking() && counterEnabled)
 			anim->Counter();
-		else
+		else {
 			anim->QuickAttack();
+			currentAttackType = verticalAttack;
+		}
 	}
 }
 
 void AHeroCharacter::SlowAttack(FKey key) {
 	auto anim = GetAnim();
-	if (anim)
+	if (anim) {
 		anim->SlowAttack();
+		currentAttackType = horizontalAttack;
+	}
 }
 
 void AHeroCharacter::CigarAttackStart(FKey key) {
 	auto anim = GetAnim();
-	if (anim)
+	if (anim) {
 		anim->CigarAttack();
+		currentAttackType = smokeAttack;
+	}
 }
 
 void AHeroCharacter::CigarAttackEnd(FKey key) {
 	auto anim = GetAnim();
 	if (anim)
 		anim->CigarAttackRelease();
+	OnCigarSmokeStart();
 }
 
 void AHeroCharacter::GrabAxe() {
@@ -171,8 +185,11 @@ bool AHeroCharacter::ShouldClimb() {
 	return false;
 }
 
-void AHeroCharacter::Kill_Implementation() {
+bool AHeroCharacter::IsBlocking() const {
+	 return GetAnim()->IsBlocking();
+}
+
+void AHeroCharacter::Kill_Implementation(TSubclassOf<UDamageType> dmgType) {
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
 }

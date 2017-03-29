@@ -27,6 +27,20 @@ void ATwoDirectionalCharacter::Tick(float delta) {
 	SetActorLocation(loc);
 }
 
+void ATwoDirectionalCharacter::PostEditChangeProperty(FPropertyChangedEvent & e) {
+	FName PropertyName = (e.Property != nullptr) ? e.Property->GetFName() : NAME_None;
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(ATwoDirectionalCharacter, maxHitPoints)) {
+		currentHitPoints = maxHitPoints;
+	}
+	Super::PostEditChangeProperty(e);
+}
+
+void ATwoDirectionalCharacter::OnConstruction(const FTransform & Transform) {
+	currentHitPoints = maxHitPoints;
+	UE_LOG(LogTemp, Warning, TEXT("Hitpoints set at %f"), maxHitPoints);
+
+}
+
 void ATwoDirectionalCharacter::Move(float speed) {
 	if (!bSprinting)
 		speed *= 0.5f;
@@ -39,7 +53,6 @@ void ATwoDirectionalCharacter::Move(float speed) {
 	currentSpeed += change;
 	currentSpeed = FMath::Clamp(currentSpeed, -1.f, 1.f);
 
-	//UE_LOG(LogTemp, Warning, TEXT("Input %f, diff %f, change %f, current %f"), speed, spd, change, currentSpeed);
 	if (currentSpeed != 0.f)
 		targetDirection = currentSpeed > 0.f;
 
@@ -51,18 +64,18 @@ float ATwoDirectionalCharacter::GetDirection(FVector target){
 	float y = GetActorLocation().Y;
 	float ret = target.Y > y ? -1.f : 1.f;
 	return ret;
-
 }
 
 float ATwoDirectionalCharacter::TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) {
+	float ret = Super::TakeDamage(dmgAmount, dmgEvent, dmgInst, dmgCauser);
 	currentHitPoints -= dmgAmount;
 	if (currentHitPoints <= 0)
-		Kill();
-	UE_LOG(LogTemp, Warning, TEXT("Hit for %f points of damage"), dmgAmount);
-	return currentHitPoints;
+		Kill(dmgEvent.DamageTypeClass);
+	UE_LOG(LogTemp, Warning, TEXT("Hit for %f points of damage reducing hp to %f"), dmgAmount, currentHitPoints);
+	return ret;
 }
 
-void ATwoDirectionalCharacter::Kill_Implementation() {
-	Cast<UTwoDirectionalCharacterAnimator>(GetMesh()->GetAnimInstance())->Kill();
+void ATwoDirectionalCharacter::Kill_Implementation(TSubclassOf<UDamageType> dmgType) {
+	Cast<UTwoDirectionalCharacterAnimator>(GetMesh()->GetAnimInstance())->Kill(dmgType);
 }
 

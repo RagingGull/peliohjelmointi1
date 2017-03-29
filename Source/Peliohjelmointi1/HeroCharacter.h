@@ -4,7 +4,9 @@
 
 #include "TwoDirectionalCharacter.h"
 #include "HeroAnimator.h"
+#include "HeroAttackType.h"
 #include "Runtime/Engine/Classes/Engine/StaticMeshActor.h"
+#include "GameFramework/DamageType.h"
 #include "HeroCharacter.generated.h"
 
 /**
@@ -15,7 +17,7 @@ class PELIOHJELMOINTI1_API AHeroCharacter : public ATwoDirectionalCharacter {
 
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* SideViewCameraComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -40,7 +42,7 @@ class PELIOHJELMOINTI1_API AHeroCharacter : public ATwoDirectionalCharacter {
 
 public:
 	AHeroCharacter();
-	
+
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
@@ -52,9 +54,15 @@ public:
 	FORCEINLINE float GetClimbDistance() const { return climbDistance; }
 	FORCEINLINE float GetBlockSpeed() const { return blockSpeed; }
 
-	class UHeroAnimator * GetAnim() const { return Cast<UHeroAnimator>(GetMesh()->GetAnimInstance()); }
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		FHeroAttackType GetCurrentAttackType() const { return currentAttackType; }
 
-	virtual void Kill_Implementation();
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void SetCurrentAttackType(FHeroAttackType type) { currentAttackType = type; }
+
+	class UHeroAnimator * GetAnim() const { return Cast<UHeroAnimator>(GetMesh()->GetAnimInstance()); }
+	
+	virtual void Kill_Implementation(TSubclassOf<UDamageType> dmgType);
 
 	void GrabAxe();
 	void ReleaseAxe();
@@ -76,7 +84,18 @@ protected:
 
 	bool ShouldClimb();
 
+	UFUNCTION(BlueprintImplementableEvent, Category="Combat")
+		void OnCigarSmokeStart();
+
+	UPROPERTY(BlueprintReadWrite, Category="Combat")
+		bool counterEnabled;
+	
 private:
 	FVector GetAxeOffset() { return FVector(0.f, 0.f, 58.f); };
+
+	FHeroAttackType currentAttackType;
+	FHeroAttackType horizontalAttack;
+	FHeroAttackType verticalAttack;
+	FHeroAttackType smokeAttack;
 
 };

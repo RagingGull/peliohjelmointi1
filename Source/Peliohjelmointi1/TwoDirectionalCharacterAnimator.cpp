@@ -33,7 +33,3 @@ void UTwoDirectionalCharacterAnimator::OnTurnEnd() {
 		character->SetActorLocationAndRotation(loc, rot);
 	}
 }
-
-void UTwoDirectionalCharacterAnimator::Kill() {
-	killTrigger = true;
-}
