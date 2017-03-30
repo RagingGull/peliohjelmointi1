@@ -62,12 +62,17 @@ public:
 
 	class UHeroAnimator * GetAnim() const { return Cast<UHeroAnimator>(GetMesh()->GetAnimInstance()); }
 	
-	virtual void Kill_Implementation(TSubclassOf<UDamageType> dmgType);
+	virtual void Kill_Implementation(TSubclassOf<UDamageType> dmgType) override;
+
+	virtual float TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) override;
 
 	void GrabAxe();
 	void ReleaseAxe();
 	void ToggleAxePhysics();
 	void ShoveAxe();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void RemoveBlockedDamager(UPrimitiveComponent* damager);
 
 protected:
 	virtual void Tick(float delta) override;
@@ -89,7 +94,16 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category="Combat")
 		bool counterEnabled;
-	
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void AddBlockedDamager(UPrimitiveComponent* damager);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
+		void OnBlockStarted();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
+		void OnBlockEnded();
+
 private:
 	FVector GetAxeOffset() { return FVector(0.f, 0.f, 58.f); };
 
@@ -97,5 +111,7 @@ private:
 	FHeroAttackType horizontalAttack;
 	FHeroAttackType verticalAttack;
 	FHeroAttackType smokeAttack;
+
+	TArray<UPrimitiveComponent*> blockedDamagers;
 
 };

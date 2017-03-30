@@ -3,6 +3,7 @@
 #pragma once
 
 #include "TwoDirectionalCharacter.h"
+#include "HeroCharacter.h"
 #include "EnemyCharacter.generated.h"
 
 /**
@@ -15,6 +16,7 @@ enum class EEnemyState : uint8 {
 	ES_Attack UMETA(DisplayName="Attack"),
 	ES_Cough UMETA(DisplayName = "Cough"),
 	ES_Dodge UMETA(DisplayName = "Dodge"),
+	ES_Shoved UMETA(DisplayName = "Shoved"),
 	ES_Duck UMETA(DisplayName = "Duck"),
 	ES_Dead UMETA(DisplayName = "Dead")
 };
@@ -33,4 +35,13 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "State")
 		EEnemyState state;
+
+	FORCEINLINE UPrimitiveComponent * GetActiveDamager() const { return activeDamager; }
+
+protected:
+	UPROPERTY(BlueprintReadWrite, Category = "Damage")
+		UPrimitiveComponent * activeDamager;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		AHeroCharacter * FindHero();
 };

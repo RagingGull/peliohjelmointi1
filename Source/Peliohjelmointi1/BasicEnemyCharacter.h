@@ -31,13 +31,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 		void SmokeUnstun();
 
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Combat")
+		void EnableAttackColliders(bool value, int colId);
+
 	//Deathhh
 	virtual void Kill_Implementation(TSubclassOf<UDamageType> dmgType);
-
-		void SliceHorizontally();
-		void SliceVertically();
-
-
+	
 private:
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 		int damage;

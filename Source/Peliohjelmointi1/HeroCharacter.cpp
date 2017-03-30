@@ -5,6 +5,7 @@
 #include "SmokeDamage.h"
 #include "HorizontalDamage.h"
 #include "VerticalDamage.h"
+#include "EnemyCharacter.h"
 
 AHeroCharacter::AHeroCharacter() : Super() {
 
@@ -74,10 +75,16 @@ void AHeroCharacter::Sprint(float value) {
 void AHeroCharacter::Block(float value) {
 	auto anim = GetAnim();
 	if (anim) {
-		if (value > 0.5f)
+		bool isb = anim->IsBlocking();
+		if (value > 0.5f) {
 			anim->Block();
-		else if (anim->IsBlocking())
+			if (isb != anim->IsBlocking())
+				OnBlockStarted();
+		} else if (isb) {
 			anim->BlockRelease();
+			if (isb != anim->IsBlocking())
+				OnBlockEnded();
+		}
 	}
 }
 
@@ -159,6 +166,11 @@ void AHeroCharacter::ShoveAxe() {
 	UE_LOG(LogTemp, Warning, TEXT("Impulse of %f, %f, %f added"), force.X, force.Y, force.Z);
 }
 
+void AHeroCharacter::RemoveBlockedDamager(UPrimitiveComponent * damager) {
+	blockedDamagers.Remove(damager);
+	UE_LOG(LogTemp, Warning, TEXT("Removed %s"), *damager->GetName());
+}
+
 void AHeroCharacter::Tick(float delta) {
 	Super::Tick(delta);
 	auto anim = GetAnim();
@@ -185,7 +197,24 @@ bool AHeroCharacter::ShouldClimb() {
 	return false;
 }
 
+void AHeroCharacter::AddBlockedDamager(UPrimitiveComponent * damager) {
+	if (!blockedDamagers.Contains(damager)) {
+		blockedDamagers.Add(damager);
+		UE_LOG(LogTemp, Warning, TEXT("Added %s"), *damager->GetName());
+	}
+}
+
 void AHeroCharacter::Kill_Implementation(TSubclassOf<UDamageType> dmgType) {
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+float AHeroCharacter::TakeDamage(float dmgAmount, FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) {
+
+	auto active = Cast<AEnemyCharacter>(dmgCauser)->GetActiveDamager();
+	if (blockedDamagers.Contains(active))
+		dmgAmount = 0;
+
+	UE_LOG(LogTemp, Warning, TEXT("Active: %s, damage: %f"), *active->GetName(), dmgAmount);
+	return Super::TakeDamage(dmgAmount, dmgEvent, dmgInst, dmgCauser);
 }

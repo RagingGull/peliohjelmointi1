@@ -28,7 +28,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
 		void SmokeStun();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
-		void SmokeUnstun();	
+		void SmokeUnstun();
 
 protected:
 

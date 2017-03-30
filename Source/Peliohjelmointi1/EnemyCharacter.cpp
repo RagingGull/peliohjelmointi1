@@ -8,3 +8,12 @@ AEnemyCharacter::AEnemyCharacter() : Super() {
 	AIEnabled = true;
 	state = EEnemyState::ES_Idle;
 }
+
+AHeroCharacter * AEnemyCharacter::FindHero() {
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AHeroCharacter::StaticClass(), FoundActors);
+	if (FoundActors.Num() != 0) {
+		return Cast<AHeroCharacter>(FoundActors[0]);
+	}
+	return nullptr;
+}
