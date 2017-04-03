@@ -113,6 +113,7 @@ void AHeroCharacter::CigarAttackStart(FKey key) {
 	if (anim) {
 		anim->CigarAttack();
 		currentAttackType = smokeAttack;
+		timeAtCigarAttackBegin = GetWorld()->GetTimeSeconds();
 	}
 }
 
@@ -120,7 +121,7 @@ void AHeroCharacter::CigarAttackEnd(FKey key) {
 	auto anim = GetAnim();
 	if (anim)
 		anim->CigarAttackRelease();
-	OnCigarSmokeStart();
+	OnCigarSmokeStart(GetWorld()->GetTimeSeconds() - timeAtCigarAttackBegin);
 }
 
 void AHeroCharacter::GrabAxe() {

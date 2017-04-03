@@ -27,7 +27,7 @@ public:
 		bool Dodge();
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-		void SmokeStun();
+		void SmokeStun(float multiplier);
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 		void SmokeUnstun();
 
@@ -40,6 +40,8 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 		int damage;
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+		float smokeStunDuration;
 
 	FORCEINLINE class UBasicEnemyAnimator* GetEnemyAnim() {return Cast<UBasicEnemyAnimator>(GetMesh()->GetAnimInstance()); 	}
 

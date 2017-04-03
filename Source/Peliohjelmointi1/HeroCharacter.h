@@ -90,7 +90,7 @@ protected:
 	bool ShouldClimb();
 
 	UFUNCTION(BlueprintImplementableEvent, Category="Combat")
-		void OnCigarSmokeStart();
+		void OnCigarSmokeStart(float time);
 
 	UPROPERTY(BlueprintReadWrite, Category="Combat")
 		bool counterEnabled;
@@ -113,5 +113,7 @@ private:
 	FHeroAttackType smokeAttack;
 
 	TArray<UPrimitiveComponent*> blockedDamagers;
+
+	float timeAtCigarAttackBegin;
 
 };

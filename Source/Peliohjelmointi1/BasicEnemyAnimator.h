@@ -26,7 +26,7 @@ public:
 		void SliceVertically();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
-		void SmokeStun();
+		void SmokeStun(float duration);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
 		void SmokeUnstun();
 

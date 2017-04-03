@@ -33,10 +33,10 @@ bool ABasicEnemyCharacter::Dodge() {
 		return false;
 }
 
-void ABasicEnemyCharacter::SmokeStun() {
+void ABasicEnemyCharacter::SmokeStun(float multiplier) {
 	auto anim = GetEnemyAnim();
 	if (anim)
-		anim->SmokeStun();
+		anim->SmokeStun(smokeStunDuration * multiplier);
 }
 
 void ABasicEnemyCharacter::SmokeUnstun() {
