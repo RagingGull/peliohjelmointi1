@@ -7,9 +7,7 @@ EEnemyState UBasicEnemyAnimator::GetState() {
 	auto enemy = GetBasicEnemy();
 	if (enemy)
 		return enemy->state;
-	else
-		return EEnemyState::ES_Idle;
-
+	return EEnemyState::ES_Idle;
 }
 
 void UBasicEnemyAnimator::SetState(EEnemyState newState) {

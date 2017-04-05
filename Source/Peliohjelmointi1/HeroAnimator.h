@@ -3,12 +3,14 @@
 #pragma once
 
 #include "TwoDirectionalCharacterAnimator.h"
+#include "HeroState.h"
 #include "HeroCharacter.h"
 #include "HeroAnimator.generated.h"
 
 /**
  *
  */
+
 UCLASS(transient, Blueprintable, hideCategories = AnimInstance, BlueprintType)
 class PELIOHJELMOINTI1_API UHeroAnimator : public UTwoDirectionalCharacterAnimator {
 	GENERATED_BODY()
@@ -16,51 +18,33 @@ class PELIOHJELMOINTI1_API UHeroAnimator : public UTwoDirectionalCharacterAnimat
 public:
 	virtual void NativeInitializeAnimation() override;
 
-		void QuickAttack();
-		void SlowAttack();
-		void CigarAttack();
-		void CigarAttackRelease();
+	bool QuickAttack();
+	bool SlowAttack();
+	bool CigarAttack();
+	void CigarAttackRelease(float time);
 
-		void Block();
-		void BlockRelease();
-		void Counter();
-
-		
+	void Block();
+	void BlockRelease();
+	bool Counter();
 
 	UFUNCTION(BlueprintPure, Category = "Utility")
-		FORCEINLINE bool CanStartAction() { return !(attacking || climbing || inhaling || blocking); }
+		bool CanStartAction();
 
 	UFUNCTION(BlueprintCallable, Category = "Utility")
 		void DoClimb();
 
-	FORCEINLINE bool IsClimbing() { return climbing; }
-	FORCEINLINE bool IsBlocking() { return blocking; }
-	FORCEINLINE bool IsAttacking() { return attacking; }
-	FORCEINLINE bool IsInhaling() { return inhaling; }
-	FORCEINLINE bool IsCountering() { return countering; }
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void StopExhaling();
 
 protected:
-	
+
 	UFUNCTION(BlueprintPure, Category = "Utility")
-		FORCEINLINE class AHeroCharacter * GetHero() {
-		return Cast<AHeroCharacter>(getCharacter());
-	}
+		class AHeroCharacter * GetHero();
 
 	UFUNCTION(BlueprintCallable, Category = "Notify")
 		void ReleaseAxe();
 	UFUNCTION(BlueprintCallable, Category = "Notify")
 		void GrabAxe();
-
-	UPROPERTY(BlueprintReadWrite, Category = "State")
-		bool climbing;
-	UPROPERTY(BlueprintReadWrite, Category = "State")
-		bool blocking;
-	UPROPERTY(BlueprintReadWrite, Category = "State")
-		bool attacking;
-	UPROPERTY(BlueprintReadWrite, Category = "State")
-		bool inhaling;
-	UPROPERTY(BlueprintReadWrite, Category = "State")
-		bool countering;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Trigger")
 		bool climbTrigger;
@@ -76,7 +60,21 @@ protected:
 		bool getHitRearTrigger;
 	UPROPERTY(BlueprintReadWrite, Category = "Trigger")
 		bool getHitFrontTrigger;
+	UPROPERTY(BlueprintReadWrite, Category = "Trigger")
+		bool stopExhaleTrigger;
 
 	UPROPERTY(BlueprintReadWrite, Category = "State")
-		float blockingAngle;	
+		float blockingAngle;
+
+	UFUNCTION(BlueprintPure, Category = "State", meta = (BlueprintThreadSafe = "true"))
+		bool IsState(EHeroState state);
+
+	UFUNCTION(BlueprintPure, Category = "State", meta = (BlueprintThreadSafe = "true"))
+		EHeroState GetState();
+
+	UFUNCTION(BlueprintCallable, Category = "State")
+		void SetState(EHeroState newState);
+
+	UPROPERTY(BlueprintReadWrite, Category = "State")
+		float exhaleDuration;
 };

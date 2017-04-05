@@ -17,6 +17,7 @@ AHeroCharacter::AHeroCharacter() : Super() {
 	axe->SetupAttachment(GetMesh(), TEXT("AxeSocket"));
 	axe->RelativeLocation = GetAxeOffset();
 
+
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 80.0f);
 
 	// Don't rotate when the controller rotates.
@@ -46,6 +47,9 @@ AHeroCharacter::AHeroCharacter() : Super() {
 	horizontalAttack = FHeroAttackType(250, TSubclassOf<UDamageType>(UHorizontalDamage::StaticClass()));
 	verticalAttack = FHeroAttackType(100, TSubclassOf<UDamageType>(UVerticalDamage::StaticClass()));
 	smokeAttack = FHeroAttackType(0, TSubclassOf<UDamageType>(USmokeDamage::StaticClass()));
+
+	smokeDuration = 4.f;
+	counterPromptDuration = .5f;
 }
 
 void AHeroCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
@@ -74,54 +78,58 @@ void AHeroCharacter::Sprint(float value) {
 
 void AHeroCharacter::Block(float value) {
 	auto anim = GetAnim();
-	if (anim) {
-		bool isb = anim->IsBlocking();
-		if (value > 0.5f) {
-			anim->Block();
-			if (isb != anim->IsBlocking())
-				OnBlockStarted();
-		} else if (isb) {
-			anim->BlockRelease();
-			if (isb != anim->IsBlocking())
-				OnBlockEnded();
-		}
+	EHeroState old = state;
+	if (value > 0.5f) {
+		anim->Block();
+		if (state != old)
+			OnBlockStarted();
+	} else if (old == EHeroState::HS_Block) {
+		anim->BlockRelease();
+		if (state != old)
+			OnBlockEnded();
 	}
 }
 
 void AHeroCharacter::QuickAttack(FKey key) {
 	auto anim = GetAnim();
 	if (anim) {
-		if (anim->IsBlocking() && counterEnabled)
-			anim->Counter();
+		bool success = false;
+		if (state == EHeroState::HS_Block && counterEnabled)
+			success = anim->Counter();
 		else {
-			anim->QuickAttack();
+			success = anim->QuickAttack();
 			currentAttackType = verticalAttack;
 		}
+		if (success)
+			damagerBlacklist.Empty();
 	}
 }
 
 void AHeroCharacter::SlowAttack(FKey key) {
 	auto anim = GetAnim();
 	if (anim) {
-		anim->SlowAttack();
 		currentAttackType = horizontalAttack;
+		if (anim->SlowAttack())
+			damagerBlacklist.Empty();
 	}
 }
 
 void AHeroCharacter::CigarAttackStart(FKey key) {
 	auto anim = GetAnim();
 	if (anim) {
-		anim->CigarAttack();
 		currentAttackType = smokeAttack;
 		timeAtCigarAttackBegin = GetWorld()->GetTimeSeconds();
+		if (anim->CigarAttack())
+			damagerBlacklist.Empty();
 	}
 }
 
 void AHeroCharacter::CigarAttackEnd(FKey key) {
 	auto anim = GetAnim();
+	float time = FMath::Clamp((GetWorld()->GetTimeSeconds() - timeAtCigarAttackBegin) / smokeDuration, 0.f, 1.f);
 	if (anim)
-		anim->CigarAttackRelease();
-	OnCigarSmokeStart(GetWorld()->GetTimeSeconds() - timeAtCigarAttackBegin);
+		anim->CigarAttackRelease(time);
+	OnCigarSmokeStart(time);
 }
 
 void AHeroCharacter::GrabAxe() {
@@ -172,6 +180,13 @@ void AHeroCharacter::RemoveBlockedDamager(UPrimitiveComponent * damager) {
 	UE_LOG(LogTemp, Warning, TEXT("Removed %s"), *damager->GetName());
 }
 
+void AHeroCharacter::ToggleMovementState() {
+	auto m = GetCharacterMovement();
+	if (m) {
+		m->SetMovementMode((m->MovementMode == EMovementMode::MOVE_Flying) ? EMovementMode::MOVE_Walking : EMovementMode::MOVE_Flying);
+	}
+}
+
 void AHeroCharacter::Tick(float delta) {
 	Super::Tick(delta);
 	auto anim = GetAnim();
@@ -203,6 +218,15 @@ void AHeroCharacter::AddBlockedDamager(UPrimitiveComponent * damager) {
 		blockedDamagers.Add(damager);
 		UE_LOG(LogTemp, Warning, TEXT("Added %s"), *damager->GetName());
 	}
+}
+
+bool AHeroCharacter::IsBlacklisted(AActor * actor) const {
+	return damagerBlacklist.Contains(actor);
+}
+
+void AHeroCharacter::AddToBlacklist(AActor * actor) {
+	if (!IsBlacklisted(actor))
+		damagerBlacklist.Add(actor);
 }
 
 void AHeroCharacter::Kill_Implementation(TSubclassOf<UDamageType> dmgType) {

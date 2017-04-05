@@ -3,6 +3,7 @@
 #pragma once
 
 #include "TwoDirectionalCharacter.h"
+#include "HeroState.h"
 #include "HeroAnimator.h"
 #include "HeroAttackType.h"
 #include "Runtime/Engine/Classes/Engine/StaticMeshActor.h"
@@ -12,6 +13,7 @@
 /**
  *
  */
+
 UCLASS()
 class PELIOHJELMOINTI1_API AHeroCharacter : public ATwoDirectionalCharacter {
 
@@ -37,6 +39,12 @@ class PELIOHJELMOINTI1_API AHeroCharacter : public ATwoDirectionalCharacter {
 
 	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 		FVector axeThrowForce;
+
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+		float smokeDuration;
+
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+		float counterPromptDuration;
 
 	class UHeroAnimator * _anim;
 
@@ -74,6 +82,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 		void RemoveBlockedDamager(UPrimitiveComponent* damager);
 
+	UFUNCTION(BlueprintCallable, Category = "State")
+		void SetState(EHeroState newState) { state = newState; }
+
+	UFUNCTION(BlueprintPure, Category = "State")
+		EHeroState GetState() const { return state; }
+
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		float GetSmokeDuration() const { return smokeDuration; }
+
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		float GetCounterPromptDuration() const { return counterPromptDuration; }
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void ToggleMovementState();
+
 protected:
 	virtual void Tick(float delta) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
@@ -90,7 +113,7 @@ protected:
 	bool ShouldClimb();
 
 	UFUNCTION(BlueprintImplementableEvent, Category="Combat")
-		void OnCigarSmokeStart(float time);
+		void OnCigarSmokeStart(float ratio);
 
 	UPROPERTY(BlueprintReadWrite, Category="Combat")
 		bool counterEnabled;
@@ -104,8 +127,15 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
 		void OnBlockEnded();
 
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		bool IsBlacklisted(AActor* actor) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void AddToBlacklist(AActor* actor);
+
 private:
 	FVector GetAxeOffset() { return FVector(0.f, 0.f, 58.f); };
+	
 
 	FHeroAttackType currentAttackType;
 	FHeroAttackType horizontalAttack;
@@ -116,4 +146,7 @@ private:
 
 	float timeAtCigarAttackBegin;
 
+	EHeroState state;
+
+	TArray<AActor*> damagerBlacklist;
 };
