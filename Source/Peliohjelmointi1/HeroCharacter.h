@@ -97,6 +97,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		void ToggleMovementState();
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void GrabCigar();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void PutCigarToMouth();
+
+	UFUNCTION(BlueprintPure, Category = "IK")
+		bool IsAxeHandIKActive() const { return axeHandIkActive; }
+
+	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent, Category = "Combat")
+		void ToggleAxeDamage(bool b);
+
+
 protected:
 	virtual void Tick(float delta) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
@@ -134,7 +147,6 @@ protected:
 		void AddToBlacklist(AActor* actor);
 
 private:
-	FVector GetAxeOffset() { return FVector(0.f, 0.f, 58.f); };
 	
 
 	FHeroAttackType currentAttackType;
@@ -149,4 +161,6 @@ private:
 	EHeroState state;
 
 	TArray<AActor*> damagerBlacklist;
+
+	bool axeHandIkActive;
 };

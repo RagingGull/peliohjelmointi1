@@ -17,39 +17,52 @@ void UHeroAnimator::NativeInitializeAnimation() {
 	blockingAngle = 0.f;
 }
 
+void UHeroAnimator::NativeUpdateAnimation(float delta) {
+	Super::NativeUpdateAnimation(delta);
+	auto hero = GetHero();
+	if (hero) {
+		auto axe = hero->GetAxe();
+		if(axe)
+		axeIkLoc = axe->GetSocketLocation(TEXT("UpperHandle"));
+	}
+}
+
 bool UHeroAnimator::QuickAttack() { return (quickAttackTrigger = CanStartAction()); }
 
 bool UHeroAnimator::SlowAttack() { return (slowAttackTrigger = CanStartAction()); }
 
 bool UHeroAnimator::CigarAttack() { return (inhaleCigarTrigger = CanStartAction()); }
 
-void UHeroAnimator::CigarAttackRelease(float time) { 
+void UHeroAnimator::CigarAttackRelease(float time) {
 	exhaleDuration = time;
-	if (IsState(EHeroState::HS_Inhale)) 
-		exhaleCigarTrigger = true; 
+	if (IsState(EHeroState::HS_Inhale))
+		exhaleCigarTrigger = true;
 }
 
 void UHeroAnimator::Block() {
 	auto hero = GetHero();
-	if (hero && !IsState(EHeroState::HS_Block)) {
-		if (CanStartAction())
-			SetState(EHeroState::HS_Block);
-		else {
-			//Get mouse delta and change block angle accordingly. Y applied directly, x depends on hero's direction
-			float x, y;
-			Cast<APlayerController>(hero->Controller)->GetInputMouseDelta(x, y);
-
-			if (x == 0.f && y == 0.f)
+	if (hero) {
+		if (!IsState(EHeroState::HS_Block)) {
+			if (CanStartAction())
+				SetState(EHeroState::HS_Block);
+			else
 				return;
-			//Flip sign of x if hero is pointing in the negative direction.
-			float sfy = GetCurrentForwardY() < 0.f ? -1.f : 1.f;
-			x *= sfy;
-
-			float rate = GetWorld()->GetDeltaSeconds() * GetHero()->GetBlockSpeed();
-			float change = ((FMath::Clamp(x, -5.f, 5.f) / 10.f) + (FMath::Clamp(y, -5.f, 5.f) / 10.f)) * rate;
-
-			blockingAngle = FMath::Clamp(blockingAngle + change, 0.f, 100.f);
 		}
+
+		//Get mouse delta and change block angle accordingly. Y applied directly, x depends on hero's direction
+		float x, y;
+		Cast<APlayerController>(hero->Controller)->GetInputMouseDelta(x, y);
+
+		if (x == 0.f && y == 0.f)
+			return;
+		//Flip sign of x if hero is pointing in the negative direction.
+		float sfy = GetCurrentForwardY() < 0.f ? -1.f : 1.f;
+		x *= sfy;
+
+		float rate = GetWorld()->GetDeltaSeconds() * GetHero()->GetBlockSpeed();
+		float change = ((FMath::Clamp(x, -5.f, 5.f) / 10.f) + (FMath::Clamp(y, -5.f, 5.f) / 10.f)) * rate;
+
+		blockingAngle = FMath::Clamp(blockingAngle + change, 0.f, 100.f);
 	}
 }
 
@@ -114,4 +127,12 @@ void UHeroAnimator::GrabAxe() {
 	auto hero = GetHero();
 	if (hero)
 		hero->GrabAxe();
+}
+
+bool UHeroAnimator::IsAxeHandIKActive()
+{
+	auto hero = GetHero();
+	if (hero)
+		return hero->IsAxeHandIKActive();
+	return false;
 }

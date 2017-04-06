@@ -15,7 +15,7 @@ AHeroCharacter::AHeroCharacter() : Super() {
 
 	axe = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Axe"));
 	axe->SetupAttachment(GetMesh(), TEXT("AxeSocket"));
-	axe->RelativeLocation = GetAxeOffset();
+	axe->RelativeLocation = FVector::ZeroVector;
 
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 80.0f);
@@ -50,6 +50,7 @@ AHeroCharacter::AHeroCharacter() : Super() {
 
 	smokeDuration = 4.f;
 	counterPromptDuration = .5f;
+	axeHandIkActive = true;
 }
 
 void AHeroCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
@@ -94,9 +95,12 @@ void AHeroCharacter::QuickAttack(FKey key) {
 	auto anim = GetAnim();
 	if (anim) {
 		bool success = false;
-		if (state == EHeroState::HS_Block && counterEnabled)
+		if (state == EHeroState::HS_Block && counterEnabled) {
 			success = anim->Counter();
-		else {
+			if (success) {
+				
+			}
+		}else {
 			success = anim->QuickAttack();
 			currentAttackType = verticalAttack;
 		}
@@ -109,8 +113,10 @@ void AHeroCharacter::SlowAttack(FKey key) {
 	auto anim = GetAnim();
 	if (anim) {
 		currentAttackType = horizontalAttack;
-		if (anim->SlowAttack())
+		if (anim->SlowAttack()) {
 			damagerBlacklist.Empty();
+			SetTargetDirection(!getCurrentDirection());
+		}
 	}
 }
 
@@ -126,10 +132,10 @@ void AHeroCharacter::CigarAttackStart(FKey key) {
 
 void AHeroCharacter::CigarAttackEnd(FKey key) {
 	auto anim = GetAnim();
-	float time = FMath::Clamp((GetWorld()->GetTimeSeconds() - timeAtCigarAttackBegin) / smokeDuration, 0.f, 1.f);
+	float ratio = FMath::Clamp((GetWorld()->GetTimeSeconds() - timeAtCigarAttackBegin) / smokeDuration, 0.f, 1.f);
 	if (anim)
-		anim->CigarAttackRelease(time);
-	OnCigarSmokeStart(time);
+		anim->CigarAttackRelease(ratio * smokeDuration);
+	OnCigarSmokeStart(ratio);
 }
 
 void AHeroCharacter::GrabAxe() {
@@ -142,14 +148,18 @@ void AHeroCharacter::GrabAxe() {
 			EAttachmentRule::KeepRelative,
 			true),
 		"AxeSocket");
-	axe->RelativeLocation = GetAxeOffset();
+	axeHandIkActive = true;
 }
 
 void AHeroCharacter::ReleaseAxe() {
+	axeHandIkActive = false;
 	if (!GetAxe()->IsSimulatingPhysics())
 		ToggleAxePhysics();
 	axe->DetachFromComponent(FDetachmentTransformRules(
-		EDetachmentRule::KeepWorld, EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, true
+		EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepRelative,
+		true
 	));
 	ShoveAxe();
 }
@@ -187,6 +197,28 @@ void AHeroCharacter::ToggleMovementState() {
 	}
 }
 
+void AHeroCharacter::GrabCigar()
+{
+	cigar->AttachToComponent(GetMesh(),
+		FAttachmentTransformRules(
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::KeepRelative,
+			true), 
+		"CigarHandSocket");
+}
+
+void AHeroCharacter::PutCigarToMouth()
+{
+	cigar->AttachToComponent(GetMesh(),
+		FAttachmentTransformRules(
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::KeepRelative,
+			true),
+		"CigarSocket");
+}
+
 void AHeroCharacter::Tick(float delta) {
 	Super::Tick(delta);
 	auto anim = GetAnim();
@@ -216,7 +248,6 @@ bool AHeroCharacter::ShouldClimb() {
 void AHeroCharacter::AddBlockedDamager(UPrimitiveComponent * damager) {
 	if (!blockedDamagers.Contains(damager)) {
 		blockedDamagers.Add(damager);
-		UE_LOG(LogTemp, Warning, TEXT("Added %s"), *damager->GetName());
 	}
 }
 

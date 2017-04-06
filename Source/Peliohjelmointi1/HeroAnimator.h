@@ -17,6 +17,7 @@ class PELIOHJELMOINTI1_API UHeroAnimator : public UTwoDirectionalCharacterAnimat
 
 public:
 	virtual void NativeInitializeAnimation() override;
+	virtual void NativeUpdateAnimation(float DeltaTimeX) override;
 
 	bool QuickAttack();
 	bool SlowAttack();
@@ -45,6 +46,9 @@ protected:
 		void ReleaseAxe();
 	UFUNCTION(BlueprintCallable, Category = "Notify")
 		void GrabAxe();
+
+	UFUNCTION(BlueprintPure, Category = "IK", meta = (BlueprintThreadSafe = "true"))
+		bool IsAxeHandIKActive();
 
 	UPROPERTY(BlueprintReadWrite, Category = "Trigger")
 		bool climbTrigger;
@@ -77,4 +81,12 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "State")
 		float exhaleDuration;
+
+	UFUNCTION(BlueprintPure, Category = "IK", meta = (BlueprintThreadSafe = "true"))
+		FVector GetAxeIkLoc() const { return axeIkLoc; }
+
+private:
+	FVector axeIkLoc;
+
+	
 };

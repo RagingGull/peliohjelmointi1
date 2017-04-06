@@ -62,6 +62,7 @@ protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & e) override;
 	virtual void OnConstruction(const FTransform & Transform) override;
 
+	FORCEINLINE void SetTargetDirection(bool newDir) { targetDirection = newDir; }
 private:
 	
 	bool targetDirection;
