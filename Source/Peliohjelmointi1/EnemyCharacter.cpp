@@ -7,6 +7,7 @@
 AEnemyCharacter::AEnemyCharacter() : Super() {
 	AIEnabled = true;
 	state = EEnemyState::ES_Idle;
+	bSprinting = true;
 }
 
 AHeroCharacter * AEnemyCharacter::FindHero() {

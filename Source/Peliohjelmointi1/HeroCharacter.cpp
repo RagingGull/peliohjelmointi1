@@ -7,6 +7,9 @@
 #include "VerticalDamage.h"
 #include "EnemyCharacter.h"
 
+
+const uint32 AHeroCharacter::CIGAR_MAX_HEALTH = 100000;
+
 AHeroCharacter::AHeroCharacter() : Super() {
 
 	cigar = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cigar"));
@@ -50,7 +53,11 @@ AHeroCharacter::AHeroCharacter() : Super() {
 
 	smokeDuration = 4.f;
 	counterPromptDuration = .5f;
-	axeHandIkActive = true;
+	axeHandIkActive = false;
+
+	cigarHealth = CIGAR_MAX_HEALTH;
+	cigarLifeInSeconds = 180;
+	cigarRateInhaleMultiplier = 4.f;
 }
 
 void AHeroCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
@@ -98,9 +105,9 @@ void AHeroCharacter::QuickAttack(FKey key) {
 		if (state == EHeroState::HS_Block && counterEnabled) {
 			success = anim->Counter();
 			if (success) {
-				
+
 			}
-		}else {
+		} else {
 			success = anim->QuickAttack();
 			currentAttackType = verticalAttack;
 		}
@@ -163,7 +170,16 @@ void AHeroCharacter::ReleaseAxe() {
 	));
 	ShoveAxe();
 }
-
+void AHeroCharacter::ReleaseCigar() {
+	cigar->SetSimulatePhysics(true);
+	cigar->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	cigar->DetachFromComponent(FDetachmentTransformRules(
+		EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepRelative,
+		true
+	));
+}
 void AHeroCharacter::ToggleAxePhysics() {
 	auto mesh = GetAxe();
 	if (mesh) {
@@ -182,12 +198,15 @@ void AHeroCharacter::ShoveAxe() {
 	auto force = GetAxeThrowForce() * mesh->GetBodyInstance()->GetBodyMass();
 	force.Y *= getCurrentForwardY();
 	mesh->AddImpulse(force);
-	UE_LOG(LogTemp, Warning, TEXT("Impulse of %f, %f, %f added"), force.X, force.Y, force.Z);
 }
 
 void AHeroCharacter::RemoveBlockedDamager(UPrimitiveComponent * damager) {
 	blockedDamagers.Remove(damager);
-	UE_LOG(LogTemp, Warning, TEXT("Removed %s"), *damager->GetName());
+}
+
+void AHeroCharacter::SetState(EHeroState newState) {
+	if(state != EHeroState::HS_Dead)
+		state = newState;
 }
 
 void AHeroCharacter::ToggleMovementState() {
@@ -197,19 +216,17 @@ void AHeroCharacter::ToggleMovementState() {
 	}
 }
 
-void AHeroCharacter::GrabCigar()
-{
+void AHeroCharacter::GrabCigar() {
 	cigar->AttachToComponent(GetMesh(),
 		FAttachmentTransformRules(
 			EAttachmentRule::SnapToTarget,
 			EAttachmentRule::SnapToTarget,
 			EAttachmentRule::KeepRelative,
-			true), 
+			true),
 		"CigarHandSocket");
 }
 
-void AHeroCharacter::PutCigarToMouth()
-{
+void AHeroCharacter::PutCigarToMouth() {
 	cigar->AttachToComponent(GetMesh(),
 		FAttachmentTransformRules(
 			EAttachmentRule::SnapToTarget,
@@ -221,10 +238,22 @@ void AHeroCharacter::PutCigarToMouth()
 
 void AHeroCharacter::Tick(float delta) {
 	Super::Tick(delta);
+	if (IsDead())
+		return;
 	auto anim = GetAnim();
 	if (anim && ShouldClimb()) {
 		anim->DoClimb();
 	}
+	uint32 decrease = (uint32) (GetWorld()->GetDeltaSeconds() * (CIGAR_MAX_HEALTH / cigarLifeInSeconds));
+	if (state == EHeroState::HS_Inhale)
+		decrease *= cigarRateInhaleMultiplier;
+	cigarHealth = cigarHealth < decrease ? 0 : cigarHealth - decrease;
+
+	if (cigarHealth == 0) {	
+		Kill(nullptr);//TODO:Slow and painful death
+	}
+
+	OnCigarHealthChanged.Broadcast(FMath::Clamp((float)cigarHealth / CIGAR_MAX_HEALTH, 0.f, 1.f));
 }
 
 bool AHeroCharacter::ShouldClimb() {
@@ -261,16 +290,26 @@ void AHeroCharacter::AddToBlacklist(AActor * actor) {
 }
 
 void AHeroCharacter::Kill_Implementation(TSubclassOf<UDamageType> dmgType) {
+	ReleaseAxe();
+	ReleaseCigar();
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SetDead(true);
+	state = EHeroState::HS_Dead;
+	OnDeath();
+
 }
 
 float AHeroCharacter::TakeDamage(float dmgAmount, FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) {
 
 	auto active = Cast<AEnemyCharacter>(dmgCauser)->GetActiveDamager();
 	if (blockedDamagers.Contains(active))
-		dmgAmount = 0;
+		dmgAmount = 0.f;
 
 	UE_LOG(LogTemp, Warning, TEXT("Active: %s, damage: %f"), *active->GetName(), dmgAmount);
-	return Super::TakeDamage(dmgAmount, dmgEvent, dmgInst, dmgCauser);
+	float f = Super::TakeDamage(dmgAmount, dmgEvent, dmgInst, dmgCauser);
+
+	if (dmgAmount != 0.f)
+		OnHealthChanged.Broadcast(FMath::Clamp(getHitpointRatio(), 0.f, 1.f));
+	return f;
 }

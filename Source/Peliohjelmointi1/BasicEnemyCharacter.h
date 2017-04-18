@@ -15,7 +15,6 @@ class PELIOHJELMOINTI1_API ABasicEnemyCharacter : public AEnemyCharacter {
 public:
 	ABasicEnemyCharacter();
 
-	//Combat
 	virtual float TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) override;
 
 	UFUNCTION(BlueprintPure, Category = "Combat")

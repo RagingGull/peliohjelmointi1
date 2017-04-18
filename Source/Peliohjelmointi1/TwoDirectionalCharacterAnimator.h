@@ -42,7 +42,10 @@ public:
 		FORCEINLINE float GetCurrentForwardY() const { return currentForwardY; }
 
 	UFUNCTION(BlueprintPure, Category = "Combat", meta = (BlueprintThreadSafe = "true"))
-		FORCEINLINE bool IsDead() { return dead; };
+		bool IsDead();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void SetDead(bool b);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Death")
 		void Kill(TSubclassOf<UDamageType> dmgType);
@@ -56,9 +59,6 @@ public:
 		FORCEINLINE bool IsStaggering() const { return isStaggering; }
 	
 protected:
-
-	UPROPERTY(BlueprintReadWrite, Category = "Death")
-		bool dead;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 		void OnStaggerEnd();

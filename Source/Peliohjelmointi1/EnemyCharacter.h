@@ -36,6 +36,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "State")
 		EEnemyState state;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
+		float reactionTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
+		float attackCooldown;
+
 	FORCEINLINE UPrimitiveComponent * GetActiveDamager() const { return activeDamager; }
 
 protected:

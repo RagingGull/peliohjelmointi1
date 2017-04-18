@@ -12,7 +12,7 @@ class PELIOHJELMOINTI1_API ATwoDirectionalCharacter : public ACharacter {
 	GENERATED_BODY()
 
 public:
-	ATwoDirectionalCharacter();	
+	ATwoDirectionalCharacter();
 
 	virtual float TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) override;
 
@@ -45,9 +45,11 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Movement")
 		FORCEINLINE float getCurrentForwardY() { return currentForwardY; }
-	
+
 	UFUNCTION(BlueprintPure, Category = "Combat")
 		FORCEINLINE float getCurrentHitpoints() { return currentHitPoints; }
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		FORCEINLINE float getHitpointRatio() { return currentHitPoints / maxHitPoints; }
 
 	//bp properties
 	UPROPERTY(BlueprintReadWrite, Category = "Movement")
@@ -57,6 +59,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		float speedChangeRate;
 
+	UFUNCTION(BlueprintPure, Category = "Combat")
+		FORCEINLINE bool IsDead() { return dead; };
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+		void SetDead(bool b) { dead = b; }
+
 protected:
 	virtual void Tick(float delta) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & e) override;
@@ -64,7 +72,9 @@ protected:
 
 	FORCEINLINE void SetTargetDirection(bool newDir) { targetDirection = newDir; }
 private:
-	
+
+	bool dead;
+
 	bool targetDirection;
 	bool currentDirection;
 
@@ -76,5 +86,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 		float currentHitPoints;
+
 
 };

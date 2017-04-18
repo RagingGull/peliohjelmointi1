@@ -34,6 +34,17 @@ void UTwoDirectionalCharacterAnimator::OnTurnEnd() {
 	}
 }
 
+bool UTwoDirectionalCharacterAnimator::IsDead() {
+	if (character)
+		return character->IsDead();
+	return false;
+}
+
+void UTwoDirectionalCharacterAnimator::SetDead(bool b) {
+	if (character)
+		character->SetDead(b);
+}
+
 void UTwoDirectionalCharacterAnimator::Stagger() { isStaggering = true; }
 
 void UTwoDirectionalCharacterAnimator::OnStaggerEnd() { isStaggering = false; }

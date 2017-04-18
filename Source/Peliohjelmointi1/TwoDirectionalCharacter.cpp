@@ -81,6 +81,7 @@ float ATwoDirectionalCharacter::TakeDamage(float dmgAmount, struct FDamageEvent 
 }
 
 void ATwoDirectionalCharacter::Kill_Implementation(TSubclassOf<UDamageType> dmgType) {
-	Cast<UTwoDirectionalCharacterAnimator>(GetMesh()->GetAnimInstance())->Kill(dmgType);
+	if (!IsDead())
+		Cast<UTwoDirectionalCharacterAnimator>(GetMesh()->GetAnimInstance())->Kill(dmgType);
 }
 

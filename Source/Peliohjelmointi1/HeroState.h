@@ -9,6 +9,7 @@ enum class EHeroState : uint8 {
 	HS_Counter UMETA(DisplayName = "Counter"),
 	HS_Inhale UMETA(DisplayName = "Inhale"),
 	HS_Exhale UMETA(DisplayName = "Exhale"),
-	HS_Pickup UMETA(DisplayName = "Pickup")
+	HS_Pickup UMETA(DisplayName = "Pickup"),
+	HS_Dead UMETA(DisplayName = "Dead")
 };
 

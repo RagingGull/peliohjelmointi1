@@ -14,6 +14,7 @@
  *
  */
 
+
 UCLASS()
 class PELIOHJELMOINTI1_API AHeroCharacter : public ATwoDirectionalCharacter {
 
@@ -46,9 +47,23 @@ class PELIOHJELMOINTI1_API AHeroCharacter : public ATwoDirectionalCharacter {
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 		float counterPromptDuration;
 
+	UPROPERTY(EditAnywhere, Category = "Cigar", meta = (AllowPrivateAccess = "true"))
+		uint32 cigarLifeInSeconds;
+
+	UPROPERTY(EditAnywhere, Category = "Cigar", meta = (AllowPrivateAccess = "true"))
+		float cigarRateInhaleMultiplier;
+
 	class UHeroAnimator * _anim;
 
 public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealthChangedEvent, float, value);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCigarHealthChangedEvent, float, value);
+
+	UPROPERTY(BlueprintAssignable)
+		FHealthChangedEvent OnHealthChanged;
+	UPROPERTY(BlueprintAssignable)
+		FCigarHealthChangedEvent OnCigarHealthChanged;
+
 	AHeroCharacter();
 
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
@@ -69,21 +84,22 @@ public:
 		void SetCurrentAttackType(FHeroAttackType type) { currentAttackType = type; }
 
 	class UHeroAnimator * GetAnim() const { return Cast<UHeroAnimator>(GetMesh()->GetAnimInstance()); }
-	
-	virtual void Kill_Implementation(TSubclassOf<UDamageType> dmgType) override;
 
+	virtual void Kill_Implementation(TSubclassOf<UDamageType> dmgType) override;
+	
 	virtual float TakeDamage(float dmgAmount, struct FDamageEvent const & dmgEvent, AController * dmgInst, AActor * dmgCauser) override;
 
 	void GrabAxe();
 	void ReleaseAxe();
 	void ToggleAxePhysics();
 	void ShoveAxe();
+	void ReleaseCigar();
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 		void RemoveBlockedDamager(UPrimitiveComponent* damager);
 
 	UFUNCTION(BlueprintCallable, Category = "State")
-		void SetState(EHeroState newState) { state = newState; }
+		void SetState(EHeroState newState);
 
 	UFUNCTION(BlueprintPure, Category = "State")
 		EHeroState GetState() const { return state; }
@@ -106,8 +122,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "IK")
 		bool IsAxeHandIKActive() const { return axeHandIkActive; }
 
-	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent, Category = "Combat")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Combat")
 		void ToggleAxeDamage(bool b);
+
+	UFUNCTION(BlueprintPure, Category = "Cigar")
+		FORCEINLINE float GetCigarHealthRatio() { return FMath::Clamp((float)cigarHealth / CIGAR_MAX_HEALTH, 0.f,1.f); }
+
+	
 
 
 protected:
@@ -125,10 +146,10 @@ protected:
 
 	bool ShouldClimb();
 
-	UFUNCTION(BlueprintImplementableEvent, Category="Combat")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
 		void OnCigarSmokeStart(float ratio);
 
-	UPROPERTY(BlueprintReadWrite, Category="Combat")
+	UPROPERTY(BlueprintReadWrite, Category = "Combat")
 		bool counterEnabled;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -146,8 +167,18 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 		void AddToBlacklist(AActor* actor);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
+		void OnDeath();
+
+
+public:
+	static const uint32 CIGAR_MAX_HEALTH;
+
 private:
-	
+
+	EHeroState state;
+	//0-100000
+	uint32 cigarHealth;
 
 	FHeroAttackType currentAttackType;
 	FHeroAttackType horizontalAttack;
@@ -157,8 +188,6 @@ private:
 	TArray<UPrimitiveComponent*> blockedDamagers;
 
 	float timeAtCigarAttackBegin;
-
-	EHeroState state;
 
 	TArray<AActor*> damagerBlacklist;
 
